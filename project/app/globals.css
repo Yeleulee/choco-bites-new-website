@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 45 33% 98%;
+    --foreground: 20 18% 13%;
+    
+    --primary: 20 18% 13%;
+    --primary-foreground: 45 33% 98%;
+    
+    --secondary: 35 28% 64%;
+    --secondary-foreground: 20 18% 13%;
+    
+    --accent: 45 33% 98%;
+    --accent-foreground: 20 18% 13%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 45 33% 98%;
+    
+    --border: 20 18% 86%;
+    --input: 20 18% 86%;
+    --ring: 35 28% 64%;
+    
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 20 18% 13%;
+    --foreground: 45 33% 98%;
+    
+    --primary: 45 33% 98%;
+    --primary-foreground: 20 18% 13%;
+    
+    --secondary: 35 28% 64%;
+    --secondary-foreground: 20 18% 13%;
+    
+    --accent: 20 18% 13%;
+    --accent-foreground: 45 33% 98%;
+    
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 45 33% 98%;
+    
+    --border: 20 18% 40%;
+    --input: 20 18% 40%;
+    --ring: 35 28% 64%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  .playfair {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+.parallax-section {
+  @apply relative overflow-hidden;
+  transform-style: preserve-3d;
+}
+
+.parallax-content {
+  @apply relative z-10;
+  transform: translateZ(0);
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.product-card {
+  @apply transition-transform duration-300 hover:scale-105;
+}
+
+.hero-video {
+  @apply w-full h-screen object-cover;
+}
+
+.section-heading {
+  @apply playfair text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-8;
+}
+
+.luxury-button {
+  @apply bg-secondary text-secondary-foreground hover:bg-secondary/90 px-6 py-3 rounded-md transition-all duration-300;
+}
