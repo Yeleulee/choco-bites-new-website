@@ -35,55 +35,57 @@ export function Navigation() {
   ];
 
   return (
-    <>
+    <header className="fixed w-full z-50">
       <nav
-        className={`fixed w-full z-50 transition-all duration-300 ${
+        className={`w-full transition-all duration-300 ${
           isScrolled ? 'bg-background/95 backdrop-blur-sm shadow-md' : 'bg-transparent'
         }`}
       >
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between relative">
-          {/* Left Section – Logo */}
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/images/logo.png"
-              alt="Logo"
-              width={140}
-              height={140}
-              className="object-contain hover:scale-105 transition-transform"
-              priority
-            />
-          </Link>
+        <div className="container mx-auto px-4">
+          {/* Main Navigation Bar - Combined Logo and Links */}
+          <div className="flex items-center justify-between py-4">
+            {/* Logo - Left Aligned */}
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/images/logo.png"
+                alt="Logo"
+                width={140}
+                height={140}
+                className="w-auto h-12 object-contain hover:scale-105 transition-transform"
+                priority
+              />
+            </Link>
 
-          {/* Desktop Navigation - Hidden on Mobile */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`text-lg font-semibold transition-colors relative group ${
-                  isActivePath(link.href) ? 'text-primary' : 'hover:text-primary'
-                }`}
+            {/* Desktop Navigation - Center */}
+            <div className="hidden md:flex items-center space-x-8">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`text-lg font-semibold transition-colors relative group ${
+                    isActivePath(link.href) ? 'text-primary' : 'hover:text-primary'
+                  }`}
+                >
+                  {link.label}
+                  <span className={`absolute left-0 right-0 bottom-[-4px] h-0.5 bg-primary transform origin-left transition-transform ${
+                    isActivePath(link.href) ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                  }`} />
+                </Link>
+              ))}
+            </div>
+
+            {/* Right Section - Dark Mode Toggle and Mobile Menu */}
+            <div className="flex items-center space-x-4">
+              <ModeToggle />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="md:hidden hover:bg-primary/10"
               >
-                {link.label}
-                <span className={`absolute left-0 right-0 bottom-[-4px] h-0.5 bg-primary transform origin-left transition-transform ${
-                  isActivePath(link.href) ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
-                }`} />
-              </Link>
-            ))}
-          </div>
-
-          {/* Right Section – Dark Mode Toggle and Menu Button */}
-          <div className="flex items-center space-x-4">
-            <ModeToggle />
-            {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden hover:bg-primary/10"
-            >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
+                {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </Button>
+            </div>
           </div>
         </div>
       </nav>
@@ -127,7 +129,7 @@ export function Navigation() {
                     }`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    {link.label} {link.href === '/' ? '🏠' : link.href === '/menu' ? '🍪' : link.href === '/about' ? '📖' : '📞'}
+                    {link.label}
                   </Link>
                 ))}
               </nav>
@@ -135,6 +137,6 @@ export function Navigation() {
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </header>
   );
 } 

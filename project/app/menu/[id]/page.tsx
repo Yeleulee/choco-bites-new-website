@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ShoppingBag } from 'lucide-react';
 import { menuItems, Product } from '@/lib/menu-data';
 import { motion } from 'framer-motion';
-import { InstagramOrderButton } from '@/components/ui/instagram-order-button';
+import { OrderButton } from '@/components/ui/order-button';
 import { Navigation } from '@/components/shared/navigation';
 import { Footer } from '@/components/shared/footer';
 
@@ -110,7 +110,7 @@ export default function MenuItemPage({ params }: { params: { id: string } }) {
               <div className="mt-8 space-y-4">
                 <div className="flex items-center gap-4">
                   <span className="text-3xl font-bold">${product.price.toFixed(2)}</span>
-                  <InstagramOrderButton size="lg" className="luxury-button" />
+                  <OrderButton size="lg" className="luxury-button" />
                 </div>
               </div>
             </motion.div>

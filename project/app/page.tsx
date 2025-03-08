@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import { ShoppingBag, Menu, X, MapPin } from 'lucide-react';
 import { ModeToggle } from '@/components/mode-toggle';
 import Link from 'next/link';
 import { menuItems } from '@/lib/menu-data';
-import { InstagramOrderButton } from '@/components/ui/instagram-order-button';
+import { OrderButton } from '@/components/ui/order-button';
 
 interface Product {
   id: number;
@@ -22,6 +22,8 @@ export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cart, setCart] = useState<Product[]>([]);
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const weeklyMenu = menuItems;
 
@@ -31,6 +33,34 @@ export default function Home() {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    if (videoElement) {
+      videoElement.defaultMuted = true;
+      videoElement.muted = true;
+      
+      const handleLoadedData = () => {
+        setIsVideoLoaded(true);
+        videoElement.play().catch(error => {
+          console.error('Error playing video:', error);
+        });
+      };
+
+      const handleError = (error: ErrorEvent) => {
+        console.error('Video error:', error);
+        setIsVideoLoaded(false);
+      };
+
+      videoElement.addEventListener('loadeddata', handleLoadedData);
+      videoElement.addEventListener('error', handleError);
+
+      return () => {
+        videoElement.removeEventListener('loadeddata', handleLoadedData);
+        videoElement.removeEventListener('error', handleError);
+      };
+    }
   }, []);
 
   const addToCart = (product: Product) => {
@@ -145,20 +175,30 @@ export default function Home() {
       </AnimatePresence>
   
       {/* Hero Section */}
-      <section className="relative h-screen w-full">
-        {/* Image Container */}
+      <section className="relative h-screen w-full overflow-hidden">
+        {/* Video Background */}
         <div className="absolute inset-0 z-[-1]">
-          <Image
-            src="https://images.pexels.com/photos/14000587/pexels-photo-14000587.jpeg"
-            alt="Fresh baked cookies"
-            fill
-            className="object-cover"
-            priority
-            quality={100}
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute w-full h-full object-cover"
+            onLoadedData={() => setIsVideoLoaded(true)}
+          >
+            <source src="/vid/glaze.mp4" type="video/mp4" />
+          </video>
+          {/* Fallback background */}
+          <div 
+            className={`absolute inset-0 bg-cover bg-center transition-opacity duration-500 ${isVideoLoaded ? 'opacity-0' : 'opacity-100'}`}
+            style={{ 
+              backgroundImage: 'url(/images/1KG CHOLATE CHIPS.jpg)'
+            }} 
           />
         </div>
-        {/* Overlay with Content */}
-        <div className="relative z-10 flex items-center justify-center h-full bg-black bg-opacity-50">
+        {/* Content Overlay */}
+        <div className="relative z-10 flex items-center justify-center h-full bg-gradient-to-b from-black/30 via-black/25 to-black/40 backdrop-blur-[3px]">
           <div className="text-center text-white p-4">
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
@@ -184,7 +224,7 @@ export default function Home() {
               transition={{ delay: 0.8, duration: 0.8 }}
               className="flex justify-center"
             >
-              <InstagramOrderButton size="lg" className="luxury-button" />
+              <OrderButton size="lg" className="luxury-button" />
             </motion.div>
           </div>
         </div>
@@ -289,7 +329,7 @@ export default function Home() {
                     <h3 className="font-bold mb-2">{product.name}</h3>
                     <div className="flex items-center justify-between">
                       <span className="font-bold">${product.price.toFixed(2)}</span>
-                      <InstagramOrderButton size="sm" />
+                      <OrderButton size="sm" />
                     </div>
                   </div>
                 </Link>
@@ -324,7 +364,7 @@ export default function Home() {
                 <p className="text-3xl font-bold">$24.99</p>
                 <p className="text-foreground/80">Perfect for parties and events</p>
               </div>
-              <InstagramOrderButton size="lg" className="luxury-button" />
+              <OrderButton size="lg" className="luxury-button" />
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: 20 }}

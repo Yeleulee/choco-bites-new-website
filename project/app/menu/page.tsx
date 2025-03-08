@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { menuItems } from '@/lib/menu-data';
-import { InstagramOrderButton } from '@/components/ui/instagram-order-button';
+import { OrderButton } from '@/components/ui/order-button';
 import { Navigation } from '@/components/shared/navigation';
 import { Footer } from '@/components/shared/footer';
 import { useState, useMemo, useEffect } from 'react';
@@ -16,12 +16,19 @@ export default function MenuPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   // Scroll handler for back to top button and sticky header
   useEffect(() => {
     const handleScroll = () => {
-      setShowBackToTop(window.scrollY > 400);
-      setIsSticky(window.scrollY > 300);
+      const scrollY = window.scrollY;
+      setShowBackToTop(scrollY > 400);
+      setIsSticky(scrollY > 300);
+      
+      // Calculate scroll progress for fade effect
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = Math.min(scrollY / maxScroll, 1);
+      setScrollProgress(progress);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -55,13 +62,15 @@ export default function MenuPage() {
   return (
     <>
       <Navigation />
-      <main className="min-h-screen pt-24 pb-12">
+      <main className={`min-h-screen pt-36 pb-12 transition-all duration-300 ${
+        scrollProgress > 0 ? 'opacity-' + Math.max(100 - Math.floor(scrollProgress * 30), 70) : 'opacity-100'
+      }`}>
         <div className="container mx-auto px-4">
           {/* Enhanced Navigation Breadcrumbs */}
           <motion.div 
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-2 mb-12 text-sm md:text-base"
+            className="flex items-center gap-2 mb-8 text-sm md:text-base"
           >
             <Link 
               href="/" 
@@ -75,7 +84,7 @@ export default function MenuPage() {
           </motion.div>
 
           {/* Sticky Category Filter */}
-          <div className={`sticky top-20 z-10 py-6 bg-background/95 backdrop-blur-sm transition-all duration-300 ${
+          <div className={`sticky top-32 z-30 py-4 bg-background/80 backdrop-blur-sm transition-all duration-300 ${
             isSticky ? 'shadow-lg rounded-2xl px-4' : ''
           }`}>
             <div className="flex flex-wrap justify-center gap-3">
@@ -135,7 +144,7 @@ export default function MenuPage() {
                     <p className="text-foreground/80 mb-4 line-clamp-2 text-sm sm:text-base">{item.description}</p>
                     <div className="flex items-center justify-between">
                       <span className="text-lg font-bold">${item.price.toFixed(2)}</span>
-                      <InstagramOrderButton size="sm" />
+                      <OrderButton size="sm" />
                     </div>
                   </div>
                 </motion.div>

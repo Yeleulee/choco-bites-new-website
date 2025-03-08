@@ -1,17 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
-interface InstagramOrderButtonProps {
+interface OrderButtonProps {
   className?: string;
   size?: "default" | "sm" | "lg";
   variant?: "default" | "outline";
 }
 
-export function InstagramOrderButton({ 
+export function OrderButton({ 
   className = "", 
   size = "default",
   variant = "default"
-}: InstagramOrderButtonProps) {
+}: OrderButtonProps) {
   const router = useRouter();
 
   const handleOrder = () => {

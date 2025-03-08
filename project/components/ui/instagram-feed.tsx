@@ -2,7 +2,7 @@
 
 import { Instagram, RefreshCcw, Heart, MessageCircle, Image as ImageIcon, Loader2, Play } from 'lucide-react';
 import Script from 'next/script';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from './button';
 import Image from 'next/image';
 
@@ -33,12 +33,45 @@ const INSTAGRAM_POSTS = [
   }
 ];
 
-function InstagramPost({ post, isLoaded }: { post: typeof INSTAGRAM_POSTS[0], isLoaded: boolean }) {
+function InstagramPost({ post, isLoaded, onLoad }: { 
+  post: typeof INSTAGRAM_POSTS[0], 
+  isLoaded: boolean,
+  onLoad: () => void 
+}) {
   const [isHovered, setIsHovered] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const postRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          setIsVisible(entry.isIntersecting);
+          if (entry.isIntersecting && !isLoaded) {
+            // Slight delay to ensure proper initialization
+            setTimeout(() => onLoad(), 100);
+          }
+        });
+      },
+      { 
+        threshold: [0, 0.25, 0.5, 0.75, 1],
+        rootMargin: '50px 0px'
+      }
+    );
+
+    if (postRef.current) {
+      observer.observe(postRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [onLoad, isLoaded]);
 
   return (
     <div 
-      className="bg-background rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all"
+      ref={postRef}
+      className={`bg-background rounded-xl overflow-hidden shadow-lg transition-all duration-500 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+      }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -97,18 +130,22 @@ function InstagramPost({ post, isLoaded }: { post: typeof INSTAGRAM_POSTS[0], is
         </div>
         
         {/* Instagram Embed */}
-        <div className={`transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`transition-opacity duration-700 ${
+          isLoaded && isVisible ? 'opacity-100' : 'opacity-0'
+        }`}>
           <blockquote
             className="instagram-media"
             data-instgrm-permalink={post.url}
             data-instgrm-version="14"
-            data-instgrm-captioned
+            data-instgrm-captioned="true"
             data-instgrm-autoplay="true"
+            data-instgrm-playsinline="true"
             style={{ 
               maxWidth: '540px',
               width: '100%',
               margin: '0',
               padding: '0',
+              background: 'transparent'
             }}
           />
         </div>
@@ -121,24 +158,37 @@ export function InstagramFeed() {
   const [loadedPosts, setLoadedPosts] = useState<string[]>([]);
   const [hasError, setHasError] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
+  const initAttempts = useRef(0);
 
-  // Handle embed initialization
+  // Process embeds when they come into view
+  const processEmbed = (postUrl: string) => {
+    try {
+      // @ts-ignore
+      if (window.instgrm) {
+        // @ts-ignore
+        window.instgrm.Embeds.process();
+        setLoadedPosts(prev => Array.from(new Set([...prev, postUrl])));
+      } else if (initAttempts.current < 3) {
+        // Retry initialization if Instagram embed is not ready
+        initAttempts.current += 1;
+        setTimeout(() => processEmbed(postUrl), 1000);
+      }
+    } catch (error) {
+      console.error('Failed to process embed:', error);
+    }
+  };
+
+  // Initialize Instagram embed script
   const initializeEmbeds = () => {
     try {
       // @ts-ignore
       if (window.instgrm) {
         // @ts-ignore
         window.instgrm.Embeds.process();
-        // Force a reprocess after a short delay to ensure autoplay works
-        setTimeout(() => {
-          // @ts-ignore
-          window.instgrm.Embeds.process();
-          setLoadedPosts(INSTAGRAM_POSTS.map(post => post.url));
-          setIsInitializing(false);
-        }, 1000);
+        setIsInitializing(false);
       }
     } catch (error) {
-      console.error('Failed to load Instagram embeds:', error);
+      console.error('Failed to initialize embeds:', error);
       setHasError(true);
       setIsInitializing(false);
     }
@@ -151,38 +201,6 @@ export function InstagramFeed() {
     setIsInitializing(true);
     initializeEmbeds();
   };
-
-  // Initialize embeds and set up intersection observer for autoplay
-  useEffect(() => {
-    const timer = setTimeout(initializeEmbeds, 1000);
-
-    // Set up intersection observer for autoplay
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            // Reprocess embeds when post comes into view
-            // @ts-ignore
-            if (window.instgrm) {
-              // @ts-ignore
-              window.instgrm.Embeds.process();
-            }
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
-
-    // Observe all Instagram posts
-    document.querySelectorAll('.instagram-media').forEach(post => {
-      observer.observe(post);
-    });
-
-    return () => {
-      clearTimeout(timer);
-      observer.disconnect();
-    };
-  }, []);
 
   return (
     <div className="w-full py-12 bg-background/50">
@@ -200,7 +218,8 @@ export function InstagramFeed() {
               <InstagramPost 
                 key={post.url} 
                 post={post} 
-                isLoaded={loadedPosts.includes(post.url)} 
+                isLoaded={loadedPosts.includes(post.url)}
+                onLoad={() => processEmbed(post.url)}
               />
             ))}
           </div>
@@ -243,7 +262,7 @@ export function InstagramFeed() {
         <Script 
           src="https://www.instagram.com/embed.js"
           strategy="lazyOnload"
-          onLoad={() => setTimeout(initializeEmbeds, 500)}
+          onLoad={initializeEmbeds}
           onError={() => {
             setHasError(true);
             setIsInitializing(false);
