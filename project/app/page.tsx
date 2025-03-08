@@ -176,27 +176,30 @@ export default function Home() {
   
       {/* Hero Section */}
       <section className="relative h-screen w-full overflow-hidden">
-        {/* Video Background */}
-        <div className="absolute inset-0 z-[-1]">
+        <div className="absolute inset-0 z-[-1] overflow-hidden">
           <video
             ref={videoRef}
             autoPlay
             muted
             loop
             playsInline
+            preload="auto"
             className="absolute w-full h-full object-cover"
-            onLoadedData={() => setIsVideoLoaded(true)}
+            poster="/images/1KG CHOLATE CHIPS.jpg"
           >
-            <source src="/vid/glaze.mp4" type="video/mp4" />
+            <source src="/videos/glaze.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
           </video>
-          {/* Fallback background */}
+          
+          {/* Fallback Image - shown during load or on error */}
           <div 
-            className={`absolute inset-0 bg-cover bg-center transition-opacity duration-500 ${isVideoLoaded ? 'opacity-0' : 'opacity-100'}`}
-            style={{ 
-              backgroundImage: 'url(/images/1KG CHOLATE CHIPS.jpg)'
-            }} 
+            className={`absolute inset-0 bg-cover bg-center transition-opacity duration-500 ${
+              isVideoLoaded ? 'opacity-0' : 'opacity-100'
+            }`}
+            style={{ backgroundImage: `url('/images/1KG CHOLATE CHIPS.jpg')` }}
           />
         </div>
+        
         {/* Content Overlay */}
         <div className="relative z-10 flex items-center justify-center h-full bg-gradient-to-b from-black/30 via-black/25 to-black/40 backdrop-blur-[3px]">
           <div className="text-center text-white p-4">
